@@ -2,18 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/astaxie/beego"
-  packages = ["config","config/yaml"]
-  revision = "d96289a81bf67728cff7a19b067aaecc65a62ec6"
-  version = "v1.9.0"
-
-[[projects]]
-  name = "github.com/beego/goyaml2"
-  packages = ["."]
-  revision = "5545475820ddd4db3f90a4900d44b65d077d702d"
-  version = "2.0"
-
-[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "f006c2ac4710855cf0f916dd6b77acf6b048dc6e"
@@ -24,12 +12,6 @@
   packages = ["."]
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/wendal/errors"
-  packages = ["."]
-  revision = "f66c77a7882b399795a8987ebf87ef64a427417e"
 
 [[projects]]
   branch = "master"
@@ -52,6 +34,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a7ae6b6060d522a6073548223a94a63e460aa457d54f7261161aff0e40689b7d"
+  inputs-digest = "5afa9784ea97f90c8bc8f5f86c7b9559bd9fa39016832f1db40cdcc4e8c446c1"
   solver-name = "gps-cdcl"
   solver-version = 1
