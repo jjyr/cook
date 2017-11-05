@@ -8,9 +8,11 @@ import (
 
 type Config struct {
 	cook.CookConfig
+	DeployName string
 }
 
-func LoadConfig(path string) (c Config, err error) {
+func LoadConfig(path string, deployName string) (c Config, err error) {
+	c.DeployName = deployName
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return

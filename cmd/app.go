@@ -18,6 +18,10 @@ func InitApp() (app *cli.App) {
 			Usage: "Load configuration from config file, default is `./cook.yml`",
 			Value: "./cook.yml",
 		},
+		cli.StringFlag{
+			Name:  "name",
+			Usage: "deploy name, default is current git commit ID",
+		},
 	}
 	app.Commands = []cli.Command{
 		{
