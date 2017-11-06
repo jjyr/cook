@@ -7,7 +7,7 @@ build:
   - path: ./Dockerfile
     image: example
     build_dir: .
-Target:
+target:
   - host: server
 deploy:
   - type: docker-compose

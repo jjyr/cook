@@ -1,13 +1,15 @@
 package deployment
 
-import "github.com/jjyr/cook/config/cook"
+import (
+	"github.com/jjyr/cook/config"
+)
 
 type Deployment struct {
-	cook.CookConfig
+	config.Config
 }
 
-func NewDeployment(c cook.CookConfig) *Deployment {
-	return &Deployment{CookConfig: c}
+func NewDeployment(c config.Config) *Deployment {
+	return &Deployment{Config: c}
 }
 
 func (d *Deployment) Prepare() (err error) {

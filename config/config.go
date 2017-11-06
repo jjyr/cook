@@ -1,14 +1,16 @@
 package config
 
 import (
-	"github.com/jjyr/cook/config/cook"
+	"github.com/jjyr/cook/common"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
 
 type Config struct {
-	cook.CookConfig
-	DeployName string
+	Build      []common.BuildDesc  `yaml:"build"`
+	Target     []common.Server     `yaml:"target"`
+	Deploy     []common.DeployDesc `yaml:"deploy"`
+	DeployName string              `yaml:"name"`
 }
 
 func LoadConfig(path string, deployName string) (c Config, err error) {
@@ -17,6 +19,6 @@ func LoadConfig(path string, deployName string) (c Config, err error) {
 	if err != nil {
 		return
 	}
-	err = yaml.Unmarshal(data, &(c.CookConfig))
+	err = yaml.Unmarshal(data, &c)
 	return
 }
