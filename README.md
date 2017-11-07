@@ -3,10 +3,6 @@ Cook
 
 ``` yaml
 # cook.yml
-build:
-  - path: ./Dockerfile
-    image: example
-    build_dir: .
 target:
   - host: server
 deploy:

@@ -31,7 +31,7 @@ func InitApp() (app *cli.App) {
 			Action:      commands.Build,
 		}, {
 			Name:        "prepare",
-			Usage:       "cook prepare image [servers...]",
+			Usage:       "cook prepare",
 			Description: "Push docker image to target servers",
 			Action:      commands.Prepare,
 		}, {

@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  db:
+    image: mysql
+  redis:
+    image: redis
+  web:
+    build: .
+    image: webapp
+  worker:
+    image: webapp

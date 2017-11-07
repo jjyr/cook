@@ -4,13 +4,13 @@ import (
 	"github.com/jjyr/cook/common"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"github.com/jjyr/cook/backend"
 )
 
 type Config struct {
-	Build      []common.BuildDesc  `yaml:"build"`
-	Target     []common.Server     `yaml:"target"`
-	Deploy     []common.DeployDesc `yaml:"deploy"`
-	DeployName string              `yaml:"name"`
+	Target     []common.Server      `yaml:"target"`
+	Deploy     []backend.DeployDesc `yaml:"deploy"`
+	DeployName string               `yaml:"name"`
 }
 
 func LoadConfig(path string, deployName string) (c Config, err error) {
