@@ -49,27 +49,39 @@ func initConfig(context *cli.Context) (c config.Config) {
 
 func Main(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
-	ctl.Build()
-	ctl.Prepare()
-	ctl.Deploy()
+	if err = ctl.Build(); err != nil {
+		logrus.Fatal(err)
+	}
+	if err = ctl.Prepare(); err != nil {
+		logrus.Fatal(err)
+	}
+	if err = ctl.Deploy(); err != nil {
+		logrus.Fatal(err)
+	}
 	return
 }
 
 func Build(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
-	err = ctl.Build()
+	if err = ctl.Build(); err != nil {
+		logrus.Fatal(err)
+	}
 	return
 }
 
 func Prepare(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
-	err = ctl.Prepare()
+	if err = ctl.Prepare(); err != nil {
+		logrus.Fatal(err)
+	}
 	return
 }
 
 func Deploy(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
-	err = ctl.Deploy()
+	if err = ctl.Deploy(); err != nil {
+		logrus.Fatal(err)
+	}
 	return
 }
 

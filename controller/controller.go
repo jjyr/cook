@@ -5,6 +5,7 @@ import (
 	"github.com/jjyr/cook/deployment"
 	log "github.com/sirupsen/logrus"
 	"github.com/jjyr/cook/common"
+	"github.com/jjyr/cook/backend"
 )
 
 type Controller struct {
@@ -20,7 +21,7 @@ func (c *Controller) Build() (err error) {
 	// run docker-compose build
 
 	for _, deployDesc := range c.Config.Deploy {
-		d := deployDesc.GetBackend()
+		d := backend.GetBackend(deployDesc)
 		c.Logger.Infof("Run build from %s\n", d.Path)
 		if err = d.Build(); err != nil {
 			c.Logger.Fatal(err)
@@ -39,7 +40,7 @@ func (c *Controller) Prepare() (err error) {
 
 		images := make([]common.Image, 0)
 		for _, deployDesc := range c.Config.Deploy {
-			deployImages, err := deployDesc.GetBackend().Images()
+			deployImages, err := backend.GetBackend(deployDesc).Images()
 			if err != nil {
 				c.Logger.Fatal(err)
 			}
@@ -61,7 +62,17 @@ func (c *Controller) Deploy() (err error) {
 	// get image from docker compose
 	// run deploy-images on remote machines
 	// done
-	//d := deployment.NewDeployer(c.Config)
-	//err = d.Deploy()
+	for _, server := range c.Config.Target {
+		c.Logger.Infof("Deploy %s\n", server)
+		deployer := deployment.NewDeployer(server)
+
+		for _, deployDesc := range c.Config.Deploy {
+			err = deployer.Deploy(deployDesc)
+			if err != nil {
+				c.Logger.Fatal(err)
+			}
+		}
+		c.Logger.Infoln("Done")
+	}
 	return
 }

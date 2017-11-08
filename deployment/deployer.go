@@ -7,6 +7,8 @@ import (
 	"io"
 	"github.com/sirupsen/logrus"
 	"github.com/jjyr/cook/cmdproxy"
+	"os"
+	"path"
 )
 
 type Deployer struct {
@@ -65,7 +67,48 @@ func (d *Deployer) Prepare(images ... common.Image) (err error) {
 	return
 }
 
-func (d *Deployer) Deploy() (err error) {
+func (d *Deployer) Deploy(desc common.DeployDesc) (err error) {
 	// docker run docker-compose < compose-file
+	// docker-compose mkdir docker-compose
+	projectName := desc.ProjectName
+	if projectName == "" {
+		projectName = path.Base(path.Dir(desc.Path))
+	}
+	file, err := os.Open(desc.Path)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	var remoteDocker cmdproxy.ProxyClient
+	remoteDocker, err = cmdproxy.NewSSHProxyClient(d.Server)
+	if err != nil {
+		return
+	}
+
+	remoteStdin := remoteDocker.StdinPipe()
+	defer remoteStdin.Close()
+
+	err = remoteDocker.Start("docker", "run", "-i", "--rm", "-v", "/var/run/docker.sock:/var/run/docker.sock",
+		"jjy0/docker-compose-for-cook:latest", "/bin/bash", "-c",
+		fmt.Sprintf("'cat - > docker-compose.yml && docker-compose --project-name %s up -d --no-build'", projectName))
+	if err != nil {
+		panic(fmt.Errorf("docker-compose execute failed: %s\n", err))
+	}
+	if _, err = io.Copy(remoteStdin, file); err != nil {
+		panic(fmt.Errorf("write to remote error: %s\n", err))
+	}
+	if err = remoteStdin.Close(); err != nil {
+		panic(err)
+	}
+	err = remoteDocker.Wait()
+
+	out, _ := ioutil.ReadAll(remoteDocker.StdoutPipe())
+	errOut, _ := ioutil.ReadAll(remoteDocker.StderrPipe())
+	logrus.Infof("remote server output:%s error output:%s\n", string(out), string(errOut))
+
+	if err != nil {
+		panic("Failed to wait remote docker: " + err.Error())
+	}
 	return
 }
