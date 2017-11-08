@@ -3,11 +3,10 @@ package deployment
 import (
 	"github.com/jjyr/cook/common"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
-	"net"
-	"errors"
 	"io"
+	"github.com/sirupsen/logrus"
+	"github.com/jjyr/cook/cmdproxy"
 )
 
 type Deployer struct {
@@ -18,64 +17,51 @@ func NewDeployer(server common.Server) *Deployer {
 	return &Deployer{Server: server}
 }
 
-const privateKeyFile = `/Users/jiangjinyang/VMs/ubuntu/.vagrant/machines/default/virtualbox/private_key`
-
-func (d *Deployer) Prepare(image common.Image) (err error) {
-	//cmd := exec.Command("docker-compose", args...)
-	//err = cmd.Run()
-	// get from docker compose
-	privateKey, err := ioutil.ReadFile(privateKeyFile)
+func (d *Deployer) Prepare(images ... common.Image) (err error) {
+	var remoteDocker, localDocker cmdproxy.ProxyClient
+	remoteDocker, err = cmdproxy.NewSSHProxyClient(d.Server)
+	if err != nil {
+		return err
+	}
+	defer remoteDocker.Close()
+	remoteStdin := remoteDocker.StdinPipe()
+	defer remoteStdin.Close()
+	localDocker, _ = cmdproxy.NewLocalProxyClient()
+	defer localDocker.Close()
+	// remote: docker load
+	err = remoteDocker.Start("docker load")
+	if err != nil {
+		panic("Fail to run remote command: " + err.Error())
+	}
+	// local: docker save
+	err = localDocker.Start("docker", append([]string{"save"}, images...)...)
 	if err != nil {
 		panic(err)
 	}
-	signer, err := ssh.ParsePrivateKey([]byte(privateKey))
+
+	// copy local images to remote
+	size, err := io.Copy(remoteStdin, localDocker.StdoutPipe())
 	if err != nil {
-		panic("Failed to parse private key: " + err.Error())
-	}
-	clientConfig := &ssh.ClientConfig{
-		User: "vagrant",
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
-		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
-			return nil //ignore
-		},
-	}
-	client, err := ssh.Dial("tcp", "127.0.0.1:2222", clientConfig)
-	if err != nil {
-		panic("Failed to dial: " + err.Error())
-	}
-	session, err := client.NewSession()
-	if err != nil {
-		panic("Failed to create session: " + err.Error())
-	}
-	defer session.Close()
-	w, _ := session.StdinPipe()
-	defer w.Close()
-	r, _ := session.StdoutPipe()
-	err = session.Start("/bin/cat")
-	if err != nil {
-		panic("Failed to run: " + err.Error())
+		panic(err)
 	}
 
-	fmt.Print("writing something\n")
-	fmt.Fprintln(w, "Hello world ok?")
-	fmt.Fprint(w, io.EOF)
-	w.Close()
+	logrus.Debugf("written %d to remote\n", size)
+	remoteStdin.Close()
 
-	fmt.Print("writed, wating..\n")
-
-	err = session.Wait()
-	if err != nil {
-		panic("Failed to wait?: " + err.Error())
+	localError, err := ioutil.ReadAll(localDocker.StderrPipe())
+	if len(localError) > 0 {
+		panic(fmt.Errorf("docker save error: %s\n", string(localError)))
 	}
 
-	out, err := ioutil.ReadAll(r)
+	err = remoteDocker.Wait()
 	if err != nil {
-		panic("Failed to read?: " + err.Error())
+		panic("Failed to wait remote docker: " + err.Error())
 	}
-	fmt.Print("output is:", string(out))
-	err = errors.New("fuck done")
+	err = localDocker.Wait()
+	if err != nil {
+		panic("Failed to wait local docker: " + err.Error())
+	}
+
 	return
 }
 

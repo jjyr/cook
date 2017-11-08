@@ -35,7 +35,7 @@ func (c *Controller) Prepare() (err error) {
 	// push images to remote target
 
 	for _, server := range c.Config.Target {
-		c.Logger.Infof("Prepare %s images\n", server)
+		c.Logger.Infof("Prepare images for %s\n", server)
 
 		images := make([]common.Image, 0)
 		for _, deployDesc := range c.Config.Deploy {
@@ -48,11 +48,9 @@ func (c *Controller) Prepare() (err error) {
 
 		deployer := deployment.NewDeployer(server)
 
-		for _, image := range images {
-			c.Logger.Infof("Push %s\n", image)
-			if err = deployer.Prepare(image); err != nil {
-				return
-			}
+		c.Logger.Infof("Push images %s\n", images)
+		if err = deployer.Prepare(images...); err != nil {
+			return
 		}
 		c.Logger.Infoln("Done")
 	}
@@ -63,7 +61,7 @@ func (c *Controller) Deploy() (err error) {
 	// get image from docker compose
 	// run deploy-images on remote machines
 	// done
-	d := deployment.NewDeployer(c.Config)
-	err = d.Deploy()
+	//d := deployment.NewDeployer(c.Config)
+	//err = d.Deploy()
 	return
 }
