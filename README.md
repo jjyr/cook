@@ -1,5 +1,5 @@
 Cook
-----------------
+------
 
 ``` yaml
 # cook.yml
@@ -11,3 +11,7 @@ deploy:
     work_dir: /root
     project_name: test
 ```
+
+LICENSE
+------
+Apache License Version 2.0
