@@ -7,13 +7,11 @@ import (
 )
 
 type Config struct {
-	Target     []common.Server     `yaml:"target"`
-	Deploy     []common.DeployDesc `yaml:"deploy"`
-	DeployName string              `yaml:"name"`
+	Target []common.Server     `yaml:"target"`
+	Deploy []common.DeployDesc `yaml:"deploy"`
 }
 
-func LoadConfig(path string, deployName string) (c Config, err error) {
-	c.DeployName = deployName
+func LoadConfig(path string) (c Config, err error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return

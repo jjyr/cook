@@ -22,27 +22,11 @@ func getConfigPath(context *cli.Context) (configPath string) {
 	return
 }
 
-func getDeployName(context *cli.Context) (deployName string) {
-	deployName = context.String("name")
-	if deployName != "" {
-		return
-	}
-	// git rev-parse --short HEAD
-	// git branch q
-	workDir, err := os.Getwd()
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	deployName = path.Join(workDir, "./cook.yml")
-	return
-}
-
 func initConfig(context *cli.Context) (c config.Config) {
 	configPath := getConfigPath(context)
-	deployName := getDeployName(context)
-	c, err := config.LoadConfig(configPath, deployName)
+	c, err := config.LoadConfig(configPath)
 	if err != nil {
-		logrus.Fatalf("error: %s\nLoad config file failed: %s", configPath)
+		logrus.Errorf("error: %s\nLoad config file failed: %s, type 'cook help' to see usage\n", err, configPath)
 	}
 	return
 }
