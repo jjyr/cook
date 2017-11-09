@@ -32,7 +32,12 @@ func getServerAuthMethods(server common.Server) (authMethods []ssh.AuthMethod, e
 	if err != nil {
 		return
 	}
-	signer, err := ssh.ParsePrivateKey([]byte(privateKey))
+	var signer ssh.Signer
+	if server.PrivateKeyPassword == "" {
+		signer, err = ssh.ParsePrivateKey(privateKey)
+	} else {
+		signer, err = ssh.ParsePrivateKeyWithPassphrase(privateKey, []byte(server.PrivateKeyPassword))
+	}
 	if err != nil {
 		return
 	}

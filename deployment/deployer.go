@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"io"
-	"github.com/sirupsen/logrus"
 	"github.com/jjyr/cook/cmdproxy"
 	"os"
 	"path"
+	"github.com/jjyr/cook/log"
 )
 
 type Deployer struct {
 	Server common.Server
+	Logger log.Logger
 }
 
 func NewDeployer(server common.Server) *Deployer {
@@ -47,7 +48,7 @@ func (d *Deployer) Prepare(images ... common.Image) (err error) {
 		panic(err)
 	}
 
-	logrus.Debugf("written %d to remote\n", size)
+	d.Logger.Infof("written %d to remote\n", size)
 	remoteStdin.Close()
 
 	localError, err := ioutil.ReadAll(localDocker.StderrPipe())
@@ -96,7 +97,7 @@ func (d *Deployer) Deploy(desc common.DeployDesc) (err error) {
 		panic(fmt.Errorf("docker-compose execute failed: %s\n", err))
 	}
 	if _, err = io.Copy(remoteStdin, file); err != nil {
-		panic(fmt.Errorf("write to remote error: %s\n", err))
+		panic(fmt.Errorf("write to remote error: %s", err))
 	}
 	if err = remoteStdin.Close(); err != nil {
 		panic(err)
@@ -105,7 +106,7 @@ func (d *Deployer) Deploy(desc common.DeployDesc) (err error) {
 
 	out, _ := ioutil.ReadAll(remoteDocker.StdoutPipe())
 	errOut, _ := ioutil.ReadAll(remoteDocker.StderrPipe())
-	logrus.Infof("remote server output:%s error output:%s\n", string(out), string(errOut))
+	d.Logger.Infof("remote server output:%s error output:%s\n", string(out), string(errOut))
 
 	if err != nil {
 		panic("Failed to wait remote docker: " + err.Error())

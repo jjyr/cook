@@ -28,16 +28,12 @@ func NewDockerCompose() (*DockerCompose) {
 	return &DockerCompose{Path: "./docker-compose.yml"}
 }
 
-func (d *DockerCompose) Build() (err error) {
-	if err != nil {
-		return
-	}
-	args := []string{"build", "-f", d.Path}
+func (d *DockerCompose) BuildCmd() (cmd *exec.Cmd) {
+	args := []string{"-f", d.Path, "build"}
 	if d.WorkDir != "" {
 		args = append(args, "--project-directory", d.WorkDir)
 	}
-	cmd := exec.Command("docker-compose", args...)
-	err = cmd.Run()
+	cmd = exec.Command("docker-compose", args...)
 	return
 }
 
@@ -66,7 +62,7 @@ func (d *DockerCompose) Images() (images []common.Image, err error) {
 			continue
 		}
 		if service.Image == "" {
-			err = fmt.Errorf("use a specified image name in docker-compose, service: %s, compose-file: %s", name, d.Path)
+			err = fmt.Errorf("put 'image: \"example\"' phase in %s to specific image name for service: '%s'", d.Path, name)
 			return
 		}
 		images = append(images, fmt.Sprintf("%s:latest", service.Image))

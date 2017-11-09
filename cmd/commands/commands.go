@@ -3,7 +3,7 @@ package commands
 import (
 	"github.com/urfave/cli"
 	"github.com/jjyr/cook/config"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path"
 	"github.com/jjyr/cook/controller"
@@ -12,6 +12,13 @@ import (
 	"fmt"
 )
 
+var logger *log.Logger
+
+func init() {
+	logger = log.New()
+	logger.Out = os.Stdout
+}
+
 func getConfigPath(context *cli.Context) (configPath string) {
 	configPath = context.String("config")
 	if configPath != "" {
@@ -19,7 +26,7 @@ func getConfigPath(context *cli.Context) (configPath string) {
 	}
 	workDir, err := os.Getwd()
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	configPath = path.Join(workDir, "./cook.yml")
 	return
@@ -29,45 +36,49 @@ func initConfig(context *cli.Context) (c config.Config) {
 	configPath := getConfigPath(context)
 	c, err := config.LoadConfig(configPath)
 	if err != nil {
-		logrus.Fatalf("error: %s\nLoad config file failed: %s, type 'cook help' to see usage\n", err, configPath)
+		logger.Fatalf("error: %s\nLoad config file failed: %s, type 'cook help' to see usage", err, configPath)
 	}
 	return
 }
 
 func Main(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
+	ctl.Logger = logger
 	if err = ctl.Build(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	if err = ctl.Prepare(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	if err = ctl.Deploy(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	return
 }
 
 func Build(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
+	ctl.Logger = logger
 	if err = ctl.Build(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	return
 }
 
 func Prepare(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
+	ctl.Logger = logger
 	if err = ctl.Prepare(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	return
 }
 
 func Deploy(c *cli.Context) (err error) {
 	ctl := controller.NewController(initConfig(c))
+	ctl.Logger = logger
 	if err = ctl.Deploy(); err != nil {
-		logrus.Fatal(err)
+		logger.Fatal(err)
 	}
 	return
 }

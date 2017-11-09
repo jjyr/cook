@@ -1,14 +1,22 @@
 package common
 
 import "fmt"
-import "os/user"
+import (
+	"os/user"
+	"path"
+)
 
 type Server struct {
-	PrivateKeyFile string `yaml:"private_key_file"`
-	Host           string `yaml:"host"`
-	Port           string `yaml:"port"`
-	User           string `yaml:"user"`
-	PassWord       string `yaml:"password"`
+	PrivateKeyFile     string `yaml:"private_key_file"`
+	PrivateKeyPassword string `yaml:"private_key_password"`
+	Host               string `yaml:"host"`
+	Port               string `yaml:"port"`
+	User               string `yaml:"user"`
+	PassWord           string `yaml:"password"`
+}
+
+func (s *Server) String() string {
+	return fmt.Sprintf("%s@%s:%s", s.User, s.Host, s.Port)
 }
 
 var defaultServer Server
@@ -32,7 +40,7 @@ func init() {
 	}
 
 	defaultServer = Server{
-		PrivateKeyFile: "~/.ssh/id_rsa",
+		PrivateKeyFile: path.Join(u.HomeDir, ".ssh/id_rsa"),
 		User:           u.Username,
 		Port:           "22",
 	}

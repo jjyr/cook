@@ -3,14 +3,15 @@ package controller
 import (
 	"github.com/jjyr/cook/config"
 	"github.com/jjyr/cook/deployment"
-	log "github.com/sirupsen/logrus"
+	"github.com/jjyr/cook/log"
 	"github.com/jjyr/cook/common"
 	"github.com/jjyr/cook/backend"
+	"os"
 )
 
 type Controller struct {
 	config.Config
-	Logger *log.Logger
+	Logger log.Logger
 }
 
 func NewController(c config.Config) *Controller {
@@ -22,11 +23,14 @@ func (c *Controller) Build() (err error) {
 
 	for _, deployDesc := range c.Config.Deploy {
 		d := backend.GetBackend(deployDesc)
-		c.Logger.Infof("Run build from %s\n", d.Path)
-		if err = d.Build(); err != nil {
+		c.Logger.Infof("Run build %s", d.Path)
+		cmd := d.BuildCmd()
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err = cmd.Run(); err != nil {
 			c.Logger.Fatal(err)
 		}
-		c.Logger.Infoln("Done")
+		c.Logger.Infoln("Build complete")
 	}
 	return
 }
@@ -36,8 +40,6 @@ func (c *Controller) Prepare() (err error) {
 	// push images to remote target
 
 	for _, server := range c.Config.Target {
-		c.Logger.Infof("Prepare images for %s\n", server)
-
 		images := make([]common.Image, 0)
 		for _, deployDesc := range c.Config.Deploy {
 			deployImages, err := backend.GetBackend(deployDesc).Images()
@@ -48,12 +50,12 @@ func (c *Controller) Prepare() (err error) {
 		}
 
 		deployer := deployment.NewDeployer(server)
-
-		c.Logger.Infof("Push images %s\n", images)
+		deployer.Logger = c.Logger
+		c.Logger.Infof("Prepare push images %s to server %s", images, server.String())
 		if err = deployer.Prepare(images...); err != nil {
 			return
 		}
-		c.Logger.Infoln("Done")
+		c.Logger.Infoln("Push complete")
 	}
 	return
 }
@@ -63,10 +65,11 @@ func (c *Controller) Deploy() (err error) {
 	// run deploy-images on remote machines
 	// done
 	for _, server := range c.Config.Target {
-		c.Logger.Infof("Deploy %s\n", server)
 		deployer := deployment.NewDeployer(server)
+		deployer.Logger = c.Logger
 
 		for _, deployDesc := range c.Config.Deploy {
+			c.Logger.Infof("Deploy %s to %s", deployDesc.Path, server.String())
 			err = deployer.Deploy(deployDesc)
 			if err != nil {
 				c.Logger.Fatal(err)
