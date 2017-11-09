@@ -5,7 +5,7 @@ import "github.com/jjyr/cook/common"
 type DeployBackend = *DockerCompose
 
 func GetBackend(d common.DeployDesc) (db DeployBackend) {
-	if d.Type != "docker_compose" {
+	if d.Type != "docker-compose" {
 		panic("unknown deploy type: " + d.Type)
 	}
 	db = NewDockerCompose()

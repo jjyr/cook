@@ -7,6 +7,9 @@ import (
 	"os"
 	"path"
 	"github.com/jjyr/cook/controller"
+	"gopkg.in/yaml.v2"
+	"github.com/jjyr/cook/common"
+	"fmt"
 )
 
 func getConfigPath(context *cli.Context) (configPath string) {
@@ -26,7 +29,7 @@ func initConfig(context *cli.Context) (c config.Config) {
 	configPath := getConfigPath(context)
 	c, err := config.LoadConfig(configPath)
 	if err != nil {
-		logrus.Errorf("error: %s\nLoad config file failed: %s, type 'cook help' to see usage\n", err, configPath)
+		logrus.Fatalf("error: %s\nLoad config file failed: %s, type 'cook help' to see usage\n", err, configPath)
 	}
 	return
 }
@@ -70,5 +73,19 @@ func Deploy(c *cli.Context) (err error) {
 }
 
 func Config(c *cli.Context) (err error) {
+	var configure config.Config
+	if c.Bool("sample") {
+		configure = config.Config{
+			Target: []common.Server{{Host: "my_web_server", User: "web"}},
+			Deploy: []common.DeployDesc{{Path: "docker-compose.yml"}},
+		}
+	} else {
+		configure = initConfig(c)
+	}
+	out, err := yaml.Marshal(configure)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(out))
 	return
 }

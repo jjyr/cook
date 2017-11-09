@@ -45,7 +45,7 @@ func InitApp() (app *cli.App) {
 			Action: commands.Deploy,
 		}, {
 			Name:  "config",
-			Usage: "Display full configuration with config file",
+			Usage: "Show current configuration, type 'config --sample' show sample configuration",
 			Flags: []cli.Flag{
 				cli.BoolFlag{Name: "sample, s"},
 			},

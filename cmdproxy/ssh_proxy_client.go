@@ -8,7 +8,6 @@ import (
 	"net"
 	"strings"
 	"fmt"
-	"os/user"
 )
 
 type SSHProxyClient struct {
@@ -20,23 +19,6 @@ type SSHProxyClient struct {
 }
 
 var _ ProxyClient = &SSHProxyClient{}
-
-func setServerDefaultValues(server common.Server) (common.Server) {
-	if server.PrivateKeyFile == "" {
-		server.PrivateKeyFile = "~/.ssh/id_rsa"
-	}
-	if server.User == "" {
-		u, err := user.Current()
-		if err != nil {
-			panic(fmt.Errorf("can't get current os user %s", err))
-		}
-		server.User = u.Username
-	}
-	if server.Port == "" {
-		server.Port = "22"
-	}
-	return server
-}
 
 func getServerAuthMethods(server common.Server) (authMethods []ssh.AuthMethod, err error) {
 	if server.PassWord != "" {
@@ -61,7 +43,6 @@ func getServerAuthMethods(server common.Server) (authMethods []ssh.AuthMethod, e
 }
 
 func newSSHClient(server common.Server) (client *ssh.Client, err error) {
-	server = setServerDefaultValues(server)
 	authMethods, err := getServerAuthMethods(server)
 	if err != nil {
 		return

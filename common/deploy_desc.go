@@ -6,3 +6,11 @@ type DeployDesc struct {
 	WorkDir     string `yaml:"work_dir"`
 	ProjectName string `yaml:"project_name"`
 }
+
+var defaultDeployDesc = DeployDesc{Type: "docker-compose"}
+
+func SetDeployDescDefault(desc *DeployDesc) {
+	if desc.Type == "" {
+		desc.Type = defaultDeployDesc.Type
+	}
+}

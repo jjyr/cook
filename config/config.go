@@ -17,5 +17,18 @@ func LoadConfig(path string) (c Config, err error) {
 		return
 	}
 	err = yaml.Unmarshal(data, &c)
+	if err != nil {
+		return
+	}
+	SetConfigDefault(&c)
 	return
+}
+
+func SetConfigDefault(c *Config) {
+	for i, _ := range c.Target {
+		common.SetServerDefault(&(c.Target[i]))
+	}
+	for i, _ := range c.Deploy {
+		common.SetDeployDescDefault(&(c.Deploy[i]))
+	}
 }
