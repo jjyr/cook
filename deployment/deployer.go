@@ -106,7 +106,7 @@ func (d *Deployer) Deploy(desc common.DeployDesc) (err error) {
 
 	out, _ := ioutil.ReadAll(remoteDocker.StdoutPipe())
 	errOut, _ := ioutil.ReadAll(remoteDocker.StderrPipe())
-	d.Logger.Infof("remote server output:%s error output:%s\n", string(out), string(errOut))
+	d.Logger.Infof("remote server output:\n%s\nerror output:\n%s\n", string(out), string(errOut))
 
 	if err != nil {
 		panic("Failed to wait remote docker: " + err.Error())
